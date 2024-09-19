@@ -13,6 +13,7 @@ import uz.muydinovs.appfileuploaddownload.repository.AttachmentRepository;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,8 +87,10 @@ public class AttachmentController {
         return "fail";
     }
 
-    @GetMapping("/getFile/{id}")//get file from DB
-    public void getFile(@PathVariable Integer id, HttpServletResponse response) throws IOException {
+
+    //GET QILISHDA ID TO`G`RI BERISLISHI KERE.
+    @GetMapping("/getFileFromDb/{id}")//get file from DB
+    public void getFileFromDb(@PathVariable Integer id, HttpServletResponse response) throws IOException {
         Optional<Attachment> optionalAttachment = attachmentRepository.findById(id);
         if (optionalAttachment.isPresent()) {
             Attachment attachment = optionalAttachment.get();
@@ -101,5 +104,18 @@ public class AttachmentController {
         }
     }
 
+    @GetMapping("/getFileFromSystem/{id}")//get file from DB
+    public void getFileFromSystem(@PathVariable Integer id, HttpServletResponse response) throws IOException {
+        Optional<Attachment> optionalAttachment = attachmentRepository.findById(id);
+        if (optionalAttachment.isPresent()) {
+            Attachment attachment = optionalAttachment.get();
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + attachment.getFileOriginalName() + "\"");
+            response.setContentType(attachment.getContentType());
+
+            FileInputStream fileInputStream = new FileInputStream(uploadDirectory + "/" + attachment.getName());
+
+            FileCopyUtils.copy(fileInputStream, response.getOutputStream());
+        }
+    }
 
 }
